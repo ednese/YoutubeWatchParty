@@ -10,7 +10,6 @@
 </template>
 
 <script setup lang="ts">
-import '../dist/output.css';
 import { useFileSystemAccess } from '@vueuse/core'
 
 // const dataType = ref('Text') as any

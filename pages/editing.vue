@@ -15,7 +15,6 @@
 </template>
 
 <script setup lang="ts">
-import '../dist/output.css';
 
 const { selectedVideos } = useYoutube()
 </script>
