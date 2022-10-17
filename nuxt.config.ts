@@ -1,7 +1,7 @@
 import functions from "./sockets/index";
 
 export default defineNuxtConfig({
-  modules: ['@nuxtjs/supabase', 'nuxt-internal-socket'],
+  modules: ['nuxt-internal-socket'],
   socketIO: {
     /** Required */
     socketFunctions: functions,
