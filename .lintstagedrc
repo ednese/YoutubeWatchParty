@@ -1,0 +1,7 @@
+{
+  "*.{ts,vue}": "eslint --fix",
+  "*.{ts,vue,json}": "prettier --write",
+  "*.{styl,stylus}": "stylus-supremacy format --options .stylusrc",
+  "*.vue": "lus",
+  "*.ts": "vitest related --run"
+}

@@ -1,0 +1,22 @@
+{
+  "private": true,
+  "scripts": {
+    "build": "nuxt build",
+    "dev": "nuxt dev",
+    "generate": "nuxt generate",
+    "preview": "nuxt preview",
+    "postinstall": "nuxt prepare"
+  },
+  "devDependencies": {
+    "@nuxtjs/supabase": "^0.1.28",
+    "@tailwindcss/forms": "^0.5.3",
+    "nuxt": "3.0.0-rc.11",
+    "stylus": "^0.59.0",
+    "stylus-supremacy": "^2.15.0",
+    "tailwindcss": "^3.1.8"
+  },
+  "dependencies": {
+    "@vueuse/core": "^9.3.0",
+    "nuxt-internal-socket": "^1.0.3"
+  }
+}
