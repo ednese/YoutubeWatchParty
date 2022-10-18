@@ -1,6 +1,8 @@
+import { useStorage } from '@vueuse/core'
+
 export const useYoutube = () => {
   const videos = useState('youtubeVideos', () => []);
-  const selectedVideos = useState('youtubeSelectedVideos', () => []);
+  const selectedVideos = useStorage('videos', useState('selectedVideos', () => []));
   const videosWithFetchedTime = useState('videosWithFetchedTime', () => []);
   const config = useRuntimeConfig()
   const YOUTUBE_API = 'https://www.googleapis.com/youtube/v3/';
@@ -11,11 +13,6 @@ export const useYoutube = () => {
     part: 'snippet',
     type: 'video',
     maxResults: '20',
-    key: config.public.youtubeApiKey,
-  };
-
-  const videosRequestParams = {
-    part: 'contentDetails',
     key: config.public.youtubeApiKey,
   };
 
@@ -41,19 +38,24 @@ export const useYoutube = () => {
     )
   }
 
-  function getVideoByUrl(text: string) {
-    useFetch(YOUTUBE_SEARCH_API,
+  function getVideoByUrl(url: string) {
+    const urlParams = url.split('?').pop()
+    const id = new URLSearchParams(urlParams).get('v')
+    useFetch(YOUTUBE_VIDEOS_API,
       {
         pick: ['items' as never],
-        params: { ...searchRequestParams, maxResults: 1, q: text }
+        params: {
+          id,
+          part: 'snippet',
+          key: config.public.youtubeApiKey,
+        }
       }
     ).then(async ({ data, refresh, error }) => {
         if (error.value) {
           alert(error.value)
         } else {
           await refresh()
-          updateSelectedVideos((data.value as any)
-            .items.map(({ snippet }, i) => ({ ...snippet, id: (data.value as any).items[i].id.videoId }))[0])
+          updateSelectedVideos({ ...(data.value as any).items[0].snippet, id })
         }
       }
     )
@@ -63,7 +65,11 @@ export const useYoutube = () => {
     return useFetch(YOUTUBE_VIDEOS_API,
       {
         pick: ['items' as never],
-        params: { ...videosRequestParams, id }
+        params: {
+          id,
+          part: 'contentDetails',
+          key: config.public.youtubeApiKey,
+        }
       }
     ).then(async ({ data, refresh, error }) => {
         if (error.value) {
