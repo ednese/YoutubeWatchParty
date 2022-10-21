@@ -3,6 +3,7 @@
   "scripts": {
     "build": "nuxt build",
     "dev": "nuxt dev",
+    "deploy": "firebase deploy",
     "generate": "nuxt generate",
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare"
@@ -16,6 +17,7 @@
   },
   "dependencies": {
     "@vueuse/core": "^9.3.0",
-    "nuxt-internal-socket": "^1.0.3"
+    "socket.io": "^4.5.3",
+    "socket.io-client": "^4.5.3"
   }
 }
