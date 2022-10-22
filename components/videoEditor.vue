@@ -97,7 +97,7 @@ import { useEventListener, useMousePressed } from '@vueuse/core'
 const { pressed } = useMousePressed()
 
 const videosIndex = ref(0);
-const { selectedVideos } = useYoutube()
+const { selectedVideos } = useVideos()
 const selectedVideo = computed(() => selectedVideos.value[videosIndex.value])
 const duration = computed(() => convertTime(selectedVideo.value.duration))
 const { start, end } = getVideoTimeDelimitations()

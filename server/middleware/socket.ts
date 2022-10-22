@@ -33,6 +33,9 @@ export default (req: IncomingMessage, res: ServerResponse) => {
         io.in(room).emit("display video", index )
         // socket.to(params.room).emit("display video", params)
       });
+      socket.on("play video", ( room ) => {
+        io.in(room).emit("play video")
+      });
       socket.on("disconnect", (reason) => {
         console.log("socket disconnected");
         io.emit("user disconnected", socket.id);

@@ -1,11 +1,11 @@
 <template>
   <form class="mt-8 space-y-6" action="#" method="POST" @submit.prevent="getVideos">
-    <input v-model="youtubeTextSearch" class="ml-3 relative block appearance-none rounded-md border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-500 focus:z-10 focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm">
+    <input v-model="searchText" class="ml-3 relative block appearance-none rounded-md border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-500 focus:z-10 focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm">
   </form>
   <div class="videos">
     <div
       class="video"
-      v-for="video in videos"
+      v-for="video in searchVideos"
       :class="getVideoClass(video)"
       @click="updateSelectedVideos(video)"
     >
@@ -47,16 +47,18 @@
 </style>
 
 <script setup lang="ts">
-const { $io } = useNuxtApp();
-const youtubeTextSearch = ref('');
+const searchText = ref('');
 const youtubeSelectedVideos = ref([]);
+const { setSelectedGoogleDriveVideoByUrl } = useGoogleDrive()
 const {
-  search,
-  videos,
-  getVideoByUrl,
+  searchVideos,
+  youtubeSearch,
+  setSelectedYoutubeVideoByUrl,
+} = useYoutube()
+const {
   updateSelectedVideos,
   selectedVideos
-} = useYoutube()
+} = useVideos()
 
 const emit = defineEmits<{
   (name: 'updateSelectedVideos', videos: any[]): void;
@@ -72,10 +74,13 @@ function getVideoClass({ title }) {
 }
 
 function getVideos() {
-  if (youtubeTextSearch.value.startsWith('https://www.youtube.com/')) {
-    getVideoByUrl(youtubeTextSearch.value)
+  if (searchText.value.startsWith('https://www.youtube.com')) {
+    setSelectedYoutubeVideoByUrl(searchText.value)
+  } else if (searchText.value.startsWith('https://drive.google.com')) {
+    setSelectedGoogleDriveVideoByUrl(searchText.value)
+    searchText.value.match("d/(.*)/")?.[1]
   } else {
-    search(youtubeTextSearch.value)
+    youtubeSearch(searchText.value)
   }
 }
 </script>

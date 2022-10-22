@@ -18,7 +18,7 @@ import { useFileSystemAccess } from '@vueuse/core'
 
 const { $io } = useNuxtApp();
 const { push } = useRouter()
-const { setSelectedVideos } = useYoutube()
+const { setSelectedVideos } = useVideos()
 const { updateRoomId } = useRoom()
 
 onMounted(() => {

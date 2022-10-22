@@ -16,5 +16,5 @@
 
 <script setup lang="ts">
 
-const { selectedVideos } = useYoutube()
+const { selectedVideos } = useVideos()
 </script>

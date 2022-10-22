@@ -1,11 +1,14 @@
 <template>
   <div v-if="selectedVideos.length">
+    <video controls>
+      <source src="https://drive.google.com/uc?export=download&id=1AFFSLtNQUoAWRAx9r3knxpFROToaAvpR" type='video/mp4'>
+    </video>
     <iframe
       ref="youtubeVideoRef"
       width="640"
       height="360"
       class="videoEditor__video"
-      :src="`https://www.youtube.com/embed/${selectedVideo.id}?autoplay=1&mute=1&start=${start}&end=${end ? `&end=${end}` : ''}`"
+      :src="`https://www.youtube.com/embed/${selectedVideo.id}?autoplay=${autoplay}&mute=1&start=${start}&end=${end ? `&end=${end}` : ''}`"
     />
     <div class="mt-3 w-full flex">
       <NuxtLink to="/" class="m-auto inline-flex items-center justify-center rounded-md border border-transparent bg-indigo-600 px-5 py-3 text-base font-medium text-white hover:bg-indigo-700">
@@ -13,7 +16,10 @@
       </NuxtLink>
     </div>
     <div v-if="isRoomOwner && selectedVideos.length > 1" class="mt-3 flex justify-center">
-      <button @click="handleIndexChanges('-')" class="inline-flex items-center justify-center rounded-md border border-transparent bg-indigo-600 px-5 py-3 text-base font-medium text-white hover:bg-indigo-700">
+      <button @click="$io.emit('play video', roomId)" class="inline-flex items-center justify-center rounded-md border border-transparent bg-indigo-600 px-5 py-3 text-base font-medium text-white hover:bg-indigo-700">
+        Play
+      </button>
+      <button @click="handleIndexChanges('-')" class="ml-3 inline-flex items-center justify-center rounded-md border border-transparent bg-indigo-600 px-5 py-3 text-base font-medium text-white hover:bg-indigo-700">
         Vidéo précédente
       </button>
       <button @click="handleIndexChanges('+')" class="ml-3 inline-flex items-center justify-center rounded-md border border-transparent bg-indigo-600 px-5 py-3 text-base font-medium text-white hover:bg-indigo-700">
@@ -29,15 +35,19 @@
 <script setup lang="ts">
 const { $io } = useNuxtApp();
 const { roomId, isRoomOwner } = useRoom()
-const { selectedVideos } = useYoutube()
+const { selectedVideos } = useVideos()
 const { start, end } = getVideoTimeDelimitations()
 
+const autoplay = ref(0)
 const videosIndex = ref(0);
 const selectedVideo = computed(() => selectedVideos.value[videosIndex.value])
 
 onMounted(() => {
   $io.on("display video", (index) => {
     videosIndex.value = index
+  })
+  $io.on("play video", () => {
+    autoplay.value = 1
   })
 })
 
@@ -52,5 +62,6 @@ function handleIndexChanges(sign: string) {
   const length = selectedVideos.value.length;
   const index = (videosIndex.value + length + (sign === '+' ? 1 : -1)) % length
   $io.emit('display video', { index, room: roomId.value })
+  autoplay.value = 0
 }
 </script>

@@ -53,7 +53,7 @@ const { toggleRoomOwner } = useRoom()
 
 const shareLink = computed(() => window.location?.href + '?' + createdRoomId.value || roomId.value)
 
-const { selectedVideos } = useYoutube()
+const { selectedVideos } = useVideos()
 const { copy, copied } = useClipboard({ source: shareLink })
 const emit = defineEmits<{
   (name: 'startParty'): void;

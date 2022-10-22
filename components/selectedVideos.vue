@@ -31,6 +31,6 @@
 </style>
 
 <script setup lang="ts">
-const { selectedVideos, updateSelectedVideos } = useYoutube()
+const { selectedVideos, updateSelectedVideos } = useVideos()
 const imageUnderCursorIndex = ref()
 </script>
