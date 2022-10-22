@@ -39,8 +39,15 @@ export const useYoutube = () => {
   }
 
   function getVideoByUrl(url: string) {
-    const urlParams = url.split('?').pop()
-    const id = new URLSearchParams(urlParams).get('v')
+    const id = ((url) => {
+      switch(true){
+        case url.includes('shorts'):
+          return url.split('shorts/').pop()
+        default:
+          return new URLSearchParams(url.split('?').pop()).get('v');
+      }
+    })(url)
+
     useFetch(YOUTUBE_VIDEOS_API,
       {
         pick: ['items' as never],
@@ -94,6 +101,5 @@ export const useYoutube = () => {
     }
   }
 
-  // https://www.youtube.com/watch?v=MqiljVyq_1o
   return { search, videos, getVideoByUrl, selectedVideos, setSelectedVideos, updateSelectedVideos };
 }
