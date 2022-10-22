@@ -1,14 +1,17 @@
 <template>
   <div v-if="selectedVideos.length">
-    <video controls>
-      <source src="https://drive.google.com/uc?export=download&id=1AFFSLtNQUoAWRAx9r3knxpFROToaAvpR" type='video/mp4'>
-    </video>
     <iframe
-      ref="youtubeVideoRef"
+      v-if="selectedVideo.type === 'youtube'"
       width="640"
       height="360"
       class="videoEditor__video"
-      :src="`https://www.youtube.com/embed/${selectedVideo.id}?autoplay=${autoplay}&mute=1&start=${start}&end=${end ? `&end=${end}` : ''}`"
+      :src="`https://www.youtube.com/embed/${selectedVideo?.id}?autoplay=${autoplay}&mute=1&start=${start}&end=${end ? `&end=${end}` : ''}`"
+    />
+    <video
+      v-else-if="selectedVideo.type === 'googleDrive'"
+      class="videoEditor__video"
+      :controls="isRoomOwner"
+      ref="videoRef"
     />
     <div class="mt-3 w-full flex">
       <NuxtLink to="/" class="m-auto inline-flex items-center justify-center rounded-md border border-transparent bg-indigo-600 px-5 py-3 text-base font-medium text-white hover:bg-indigo-700">
@@ -33,14 +36,36 @@
 </template>
 
 <script setup lang="ts">
+import { useMediaControls } from '@vueuse/core'
+
+const videoRef = ref()
+const autoplay = ref(0)
+const videosIndex = ref(0);
+const selectedVideo = computed(() => selectedVideos.value[videosIndex.value])
+
 const { $io } = useNuxtApp();
 const { roomId, isRoomOwner } = useRoom()
 const { selectedVideos } = useVideos()
 const { start, end } = getVideoTimeDelimitations()
 
-const autoplay = ref(0)
-const videosIndex = ref(0);
-const selectedVideo = computed(() => selectedVideos.value[videosIndex.value])
+const {
+  playing,
+  currentTime,
+} = useMediaControls(videoRef, {
+  src: `https://drive.google.com/uc?export=download&id=${selectedVideo.value?.id}`,
+})
+
+watch(currentTime, (value) => {
+  if (value > end.value) {
+    playing.value = false
+    currentTime.value = 0
+  }
+})
+
+watch(selectedVideo, () => {
+  autoplay.value = 0
+  playing.value = false
+})
 
 onMounted(() => {
   $io.on("display video", (index) => {
@@ -48,6 +73,7 @@ onMounted(() => {
   })
   $io.on("play video", () => {
     autoplay.value = 1
+    playing.value = true
   })
 })
 

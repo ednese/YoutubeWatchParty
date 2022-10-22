@@ -1,7 +1,6 @@
 <template>
   <div class="wrapper">
     <WatchPartyMenu />
-    <SelectedVideos />
     <YoutubeSearch />
     <!-- <button @click="() => open()" class="inline-flex items-center justify-center rounded-md border text-indigo-500 color-indigo-600 px-5 py-3 text-base font-medium text-white hover:bg-indigo-50">
       Télécharger une vidéo

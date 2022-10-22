@@ -1,11 +1,17 @@
 <template>
   <div class="videoEditor" :style="style">
     <iframe
-      ref="youtubeVideoRef"
+      v-if="selectedVideo.type === 'youtube'"
       width="640"
       height="360"
       class="videoEditor__video"
       :src="`https://www.youtube.com/embed/${selectedVideo.id}?controls=0&start=${start}&end=${end}`"
+    />
+    <video
+      v-else-if="selectedVideo.type === 'googleDrive'"
+      controls
+      ref="videoRef"
+      class="videoEditor__video"
     />
     <div class="videoEditor__option">
       <div ref="rangeRef" class="videoEditor__option__range"/>
@@ -92,42 +98,77 @@
 </style>
 
 <script setup lang="ts">
-import { useEventListener, useMousePressed } from '@vueuse/core'
+import { useEventListener, useMousePressed, useMediaControls } from '@vueuse/core'
 
-const { pressed } = useMousePressed()
-
-const videosIndex = ref(0);
-const { selectedVideos } = useVideos()
-const selectedVideo = computed(() => selectedVideos.value[videosIndex.value])
-const duration = computed(() => convertTime(selectedVideo.value.duration))
-const { start, end } = getVideoTimeDelimitations()
-
+const videoRef = ref()
 const rangeRef = ref()
+const videosIndex = ref(0);
 const beforeTranslateX = ref(0)
 const afterTranslateX = ref(100)
 
+const { pressed } = useMousePressed()
+const { start, end } = getVideoTimeDelimitations()
+const { selectedVideos } = useVideos()
+
 const rangeWidth = computed(() => rangeRef.value?.clientWidth);
+const selectedVideo = computed(() => selectedVideos.value[videosIndex.value])
+const googleDriveVideoSrc = computed(() => `https://drive.google.com/uc?export=download&id=${selectedVideo.value.id}`)
+const youtubeDuration = computed(() => convertTime(selectedVideo.value.duration))
+const videoDuration = computed(() =>
+  selectedVideo.value?.type === 'youtube'
+    ? youtubeDuration.value
+    : selectedVideo.value?.type === 'googleDrive'
+    ? googleDriveDuration.value
+    : 0
+)
+
+const {
+  playing,
+  currentTime,
+  duration: googleDriveDuration,
+} = useMediaControls(videoRef, {
+  src: googleDriveVideoSrc.value,
+})
+
+watch(currentTime, (value) => {
+  if (value > end.value) playing.value = false
+})
 
 watch(selectedVideo, () => {
-  initTimeDelimitationsValues()
+  setVideosDelimitationsValues()
+})
+
+watch(videoDuration, () => {
+  setVideosDelimitationsValues()
+})
+
+watch(beforeTranslateX, () => {
+  if (selectedVideo.value?.type === 'googleDrive') {
+    currentTime.value = start.value
+  }
 })
 
 onMounted(async () => {
-  initTimeDelimitationsValues()
+  setVideosDelimitationsValues()
 })
 
-function initTimeDelimitationsValues() {
-  if (!selectedVideo.value?.start) {
-    selectedVideos.value[videosIndex.value].start = 0
-    beforeTranslateX.value = 0
+useEventListener(rangeRef, 'click',  (e: any) => handleRange(e, true) )
+useEventListener(rangeRef, 'mousemove', handleRange)
+
+function setVideosDelimitationsValues() {
+  if (start.value) {
+    beforeTranslateX.value = (start.value / videoDuration.value) * rangeWidth.value
   } else {
-    beforeTranslateX.value = (selectedVideo.value.start / duration.value) * rangeWidth.value
+    selectedVideo.value.start = 0
+    beforeTranslateX.value = 0
   }
-  if (!selectedVideo.value?.end) {
-    selectedVideos.value[videosIndex.value].end = duration.value
+  if (end.value && videoDuration.value) {
+    afterTranslateX.value = (end.value / videoDuration.value) * rangeWidth.value
+  } else if (!end.value) {
+    selectedVideo.value.end = videoDuration.value
     afterTranslateX.value = rangeWidth.value
   } else {
-    afterTranslateX.value = (selectedVideo.value.end / duration.value) * rangeWidth.value
+    afterTranslateX.value = rangeWidth.value
   }
 }
 
@@ -138,23 +179,17 @@ function getVideoTimeDelimitations() {
   }
 }
 
-function abs(number: number) {
-  if (number < 0) return number * -1;
-  return number;
-}
-
-useEventListener(rangeRef, 'click',  (e: any) => handleRange(e, true) )
-useEventListener(rangeRef, 'mousemove', handleRange)
-
 function handleRange({ layerX }, isClick = false) {
   if (!pressed.value && !isClick) return
   const percenatge = layerX / rangeWidth.value;
-  if (abs(layerX - beforeTranslateX.value) < abs(layerX - afterTranslateX.value)) {
+  const timeValue = Math.round(videoDuration.value * percenatge);
+
+  if (Math.abs(layerX - beforeTranslateX.value) < Math.abs(layerX - afterTranslateX.value)) {
     beforeTranslateX.value = layerX
-    selectedVideos.value[videosIndex.value].start = Math.round(duration.value * percenatge)
+    selectedVideo.value.start = timeValue
   } else {
     afterTranslateX.value = layerX
-    selectedVideos.value[videosIndex.value].end = Math.round(duration.value * percenatge)
+    selectedVideo.value.end = timeValue
   }
 }
 

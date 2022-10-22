@@ -10,6 +10,12 @@ export const useVideos = () => {
     selectedVideos.value = videos
   }
 
+  function updateSelectedVideo(video) {
+    const index = selectedVideos.value.findIndex(({ id }) => id === video.id)
+    if (index !== -1) selectedVideos.value[index] = video
+    else console.error('The video id cannot be found in the selected videos')
+  }
+
   function getVideoDurationById(id: string) {
     return useFetch(YOUTUBE_VIDEOS_API,
       {
@@ -47,5 +53,5 @@ export const useVideos = () => {
     }
   }
 
-  return { selectedVideos, setSelectedVideos, updateSelectedVideos };
+  return { selectedVideos, setSelectedVideos, updateSelectedVideo, updateSelectedVideos };
 }
