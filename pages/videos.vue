@@ -18,14 +18,14 @@
         Page d'acceuil
       </NuxtLink>
     </div>
-    <div v-if="isRoomOwner && selectedVideos.length > 1" class="mt-3 flex justify-center">
+    <div v-if="isRoomOwner && selectedVideos.length" class="mt-3 flex justify-center">
       <button @click="$io.emit('play video', roomId)" class="inline-flex items-center justify-center rounded-md border border-transparent bg-indigo-600 px-5 py-3 text-base font-medium text-white hover:bg-indigo-700">
         Play
       </button>
-      <button @click="handleIndexChanges('-')" class="ml-3 inline-flex items-center justify-center rounded-md border border-transparent bg-indigo-600 px-5 py-3 text-base font-medium text-white hover:bg-indigo-700">
+      <button v-if="selectedVideos.length > 1" @click="handleIndexChanges('-')" class="ml-3 inline-flex items-center justify-center rounded-md border border-transparent bg-indigo-600 px-5 py-3 text-base font-medium text-white hover:bg-indigo-700">
         Vidéo précédente
       </button>
-      <button @click="handleIndexChanges('+')" class="ml-3 inline-flex items-center justify-center rounded-md border border-transparent bg-indigo-600 px-5 py-3 text-base font-medium text-white hover:bg-indigo-700">
+      <button v-if="selectedVideos.length > 1" @click="handleIndexChanges('+')" class="ml-3 inline-flex items-center justify-center rounded-md border border-transparent bg-indigo-600 px-5 py-3 text-base font-medium text-white hover:bg-indigo-700">
         Vidéo suivante
       </button>
     </div>
@@ -65,9 +65,11 @@ watch(currentTime, (value) => {
 watch(selectedVideo, () => {
   autoplay.value = 0
   playing.value = false
+  if (selectedVideo.value.type === 'googleDrive') currentTime.value = selectedVideo.value.start
 })
 
 onMounted(() => {
+  if (selectedVideo.value.type === 'googleDrive') currentTime.value = selectedVideo.value.start
   $io.on("display video", (index) => {
     videosIndex.value = index
   })
